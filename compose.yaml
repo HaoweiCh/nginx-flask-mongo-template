@@ -1,0 +1,41 @@
+services:
+  web:
+    image: docker.io/bitnami/nginx:1.27-debian-12
+    volumes:
+      - ./nginx/app.conf:/opt/bitnami/nginx/conf/server_blocks/default.conf
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: app
+      target: builder
+    # target: dev-envs # for development
+    # flask requires SIGINT to stop gracefully
+    # (default stop signal from Compose is SIGTERM)
+    stop_signal: SIGINT
+    environment:
+      - FLASK_SERVER_PORT=9091
+    depends_on:
+      - mongo
+
+  mongo:
+    image: bitnami/mongodb:4.4
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGODB_ROOT_PASSWORD=B189F9553787271D
+      - MONGODB_ENABLE_JOURNAL=true
+    volumes:
+      - mongo_data:/bitnami/mongodb
+    deploy:
+      resources:
+        limits:
+          memory: 1024M
+
+volumes:
+  mongo_data:
+    driver: local

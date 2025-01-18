@@ -1,0 +1,24 @@
+# https://taskfile.dev
+
+version: '3'
+
+vars:
+  GREETING: Hello, World!
+  ProjectName: "nginx-flask-mongo-template"
+  RsyncArgs: "-avh --exclude='.idea' --exclude='.git' --exclude='__pycache__' --exclude='Taskfile.yml'"
+  Remote: hk2.host
+
+tasks:
+  default:
+    cmds:
+      - echo "{{.GREETING}}"
+    silent: true
+
+  sync:
+    cmds:
+      - rsync {{.RsyncArgs}} ./ {{.Remote}}:/apps/{{.ProjectName}}/
+    silent: true
+
+  remote:
+    cmds:
+      - ssh -t {{.Remote}} "cd /apps/{{.ProjectName}}/; exec \$SHELL"
